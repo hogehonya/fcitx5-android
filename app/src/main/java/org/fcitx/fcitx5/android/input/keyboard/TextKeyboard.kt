@@ -71,6 +71,11 @@ class TextKeyboard(
                 LanguageKey(),
                 SpaceKey(),
                 SymbolKey(".", 0.1f, KeyDef.Appearance.Variant.Alternative),
+                // Anthy converts "-" to "ー" and "?" to "？" in hiragana mode,
+                // so expose them on the main keyboard instead of hiding them
+                // behind the symbol page.
+                SymbolKey("-", 0.1f, KeyDef.Appearance.Variant.Alternative),
+                SymbolKey("?", 0.1f, KeyDef.Appearance.Variant.Alternative),
                 ReturnKey()
             )
         )
