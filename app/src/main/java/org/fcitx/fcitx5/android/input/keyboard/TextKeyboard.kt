@@ -31,6 +31,20 @@ class TextKeyboard(
         const val Name = "Text"
 
         val Layout: List<List<KeyDef>> = listOf(
+            // Number row, like ATOK / a JIS keyboard: the digits live on their
+            // own row above the letters, with the shifted symbols on swipe.
+            listOf(
+                NumberKey("1", "!"),
+                NumberKey("2", "\""),
+                NumberKey("3", "#"),
+                NumberKey("4", "$"),
+                NumberKey("5", "%"),
+                NumberKey("6", "&"),
+                NumberKey("7", "'"),
+                NumberKey("8", "("),
+                NumberKey("9", ")"),
+                NumberKey("0", "~")
+            ),
             listOf(
                 AlphabetKey("Q", "1"),
                 AlphabetKey("W", "2"),
@@ -52,7 +66,10 @@ class TextKeyboard(
                 AlphabetKey("H", "/"),
                 AlphabetKey("J", "#"),
                 AlphabetKey("K", "("),
-                AlphabetKey("L", ")")
+                AlphabetKey("L", ")"),
+                // Anthy converts "-" to "ー"; ATOK also puts it at the right
+                // end of this row.
+                SymbolKey("-", 0.1f, KeyDef.Appearance.Variant.Alternative)
             ),
             listOf(
                 CapsKey(),
@@ -71,10 +88,6 @@ class TextKeyboard(
                 LanguageKey(),
                 SpaceKey(),
                 SymbolKey(".", 0.1f, KeyDef.Appearance.Variant.Alternative),
-                // Anthy converts "-" to "ー" and "?" to "？" in hiragana mode,
-                // so expose them on the main keyboard instead of hiding them
-                // behind the symbol page.
-                SymbolKey("-", 0.1f, KeyDef.Appearance.Variant.Alternative),
                 SymbolKey("?", 0.1f, KeyDef.Appearance.Variant.Alternative),
                 ReturnKey()
             )

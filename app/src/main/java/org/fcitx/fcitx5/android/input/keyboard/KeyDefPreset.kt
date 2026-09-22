@@ -61,6 +61,29 @@ class AlphabetKey(
     )
 )
 
+/**
+ * A digit key with the shifted symbol as its alt text, like a JIS keyboard's
+ * number row (1 -> !, 2 -> ", ...). The symbol is typed by swiping up.
+ */
+class NumberKey(
+    val number: String,
+    val symbol: String,
+) : KeyDef(
+    Appearance.AltText(
+        displayText = number,
+        altText = symbol,
+        textSize = 23f
+    ),
+    setOf(
+        Behavior.Press(KeyAction.FcitxKeyAction(number)),
+        Behavior.Swipe(KeyAction.FcitxKeyAction(symbol))
+    ),
+    arrayOf(
+        Popup.AltPreview(number, symbol),
+        Popup.Keyboard.Preset(number)
+    )
+)
+
 class AlphabetDigitKey(
     val character: String,
     altText: String,
