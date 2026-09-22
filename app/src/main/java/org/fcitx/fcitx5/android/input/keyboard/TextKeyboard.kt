@@ -85,7 +85,10 @@ class TextKeyboard(
             ),
             listOf(
                 SymbolEmojiKey(),
-                SymbolKey(",", 0.1f, KeyDef.Appearance.Variant.Alternative),
+                // "@" is needed for mail addresses. The fork keeps symbols on
+                // the symbol page, but the left punctuation key carries "@"
+                // so that it stays one key away ("、" is on the symbol page).
+                SymbolKey("@", 0.1f, KeyDef.Appearance.Variant.Alternative),
                 LanguageKey(),
                 SpaceKey(),
                 SymbolKey(".", 0.1f, KeyDef.Appearance.Variant.Alternative),
