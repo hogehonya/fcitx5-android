@@ -88,6 +88,50 @@ class LetterKey(
     )
 )
 
+/**
+ * Cursor left/right, like ATOK's bottom row. Repeats while held down, the
+ * same way [BackspaceKey] does.
+ */
+class ArrowKey(
+    keySym: Int,
+    displayText: String,
+    percentWidth: Float = 0.1f,
+    variant: Variant = Variant.Alternative
+) : KeyDef(
+    Appearance.Text(
+        displayText = displayText,
+        textSize = 19f,
+        percentWidth = percentWidth,
+        variant = variant
+    ),
+    setOf(
+        Behavior.Press(KeyAction.SymAction(KeySym(keySym))),
+        Behavior.Repeat(KeyAction.SymAction(KeySym(keySym)))
+    )
+)
+
+/**
+ * Symbol/emoji key, following ATOK's pictograph key: tapping opens the symbol
+ * layout (number pad), long-pressing opens the emoji picker.
+ */
+class SymbolEmojiKey(
+    percentWidth: Float = 0.15f,
+    variant: Variant = Variant.Alternative
+) : KeyDef(
+    Appearance.ImageText(
+        displayText = "?123",
+        textSize = 16f,
+        percentWidth = percentWidth,
+        variant = variant,
+        src = R.drawable.ic_baseline_tag_faces_24
+    ),
+    setOf(
+        Behavior.Press(KeyAction.LayoutSwitchAction(NumberKeyboard.Name)),
+        Behavior.LongPress(KeyAction.PickerSwitchAction(PickerWindow.Key.Emoji))
+    ),
+    arrayOf(Popup.Preview("?123"))
+)
+
 
 class AlphabetDigitKey(
     val character: String,
