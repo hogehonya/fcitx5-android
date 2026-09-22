@@ -62,27 +62,32 @@ class AlphabetKey(
 )
 
 /**
- * A digit key with the shifted symbol as its alt text, like a JIS keyboard's
- * number row (1 -> !, 2 -> ", ...). The symbol is typed by swiping up.
+ * A letter key with no secondary label: [AlphabetKey] shows a swipe symbol
+ * under every letter, which is noise when symbols are typed from the symbol
+ * page instead of by swiping. The [Appearance.AltText] appearance is kept
+ * (with an empty alt text) so that the caps state still updates the letter
+ * shown on the key.
  */
-class NumberKey(
-    val number: String,
-    val symbol: String,
+class LetterKey(
+    val character: String,
+    variant: Variant = Variant.Normal,
+    popup: Array<Popup>? = null
 ) : KeyDef(
     Appearance.AltText(
-        displayText = number,
-        altText = symbol,
-        textSize = 23f
+        displayText = character,
+        altText = "",
+        textSize = 23f,
+        variant = variant
     ),
     setOf(
-        Behavior.Press(KeyAction.FcitxKeyAction(number)),
-        Behavior.Swipe(KeyAction.FcitxKeyAction(symbol))
+        Behavior.Press(KeyAction.FcitxKeyAction(character))
     ),
-    arrayOf(
-        Popup.AltPreview(number, symbol),
-        Popup.Keyboard.Preset(number)
+    popup ?: arrayOf(
+        Popup.Preview(character),
+        Popup.Keyboard.Preset(character)
     )
 )
+
 
 class AlphabetDigitKey(
     val character: String,

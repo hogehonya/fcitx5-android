@@ -31,55 +31,55 @@ class TextKeyboard(
         const val Name = "Text"
 
         val Layout: List<List<KeyDef>> = listOf(
-            // Number row, like ATOK / a JIS keyboard: the digits live on their
-            // own row above the letters, with the shifted symbols on swipe.
+            // Number row, like ATOK / a JIS keyboard. The shifted symbols are
+            // typed from the "?123" page instead of by swiping.
             listOf(
-                NumberKey("1", "!"),
-                NumberKey("2", "\""),
-                NumberKey("3", "#"),
-                NumberKey("4", "$"),
-                NumberKey("5", "%"),
-                NumberKey("6", "&"),
-                NumberKey("7", "'"),
-                NumberKey("8", "("),
-                NumberKey("9", ")"),
-                NumberKey("0", "~")
+                SymbolKey("1"),
+                SymbolKey("2"),
+                SymbolKey("3"),
+                SymbolKey("4"),
+                SymbolKey("5"),
+                SymbolKey("6"),
+                SymbolKey("7"),
+                SymbolKey("8"),
+                SymbolKey("9"),
+                SymbolKey("0")
             ),
             listOf(
-                AlphabetKey("Q", "1"),
-                AlphabetKey("W", "2"),
-                AlphabetKey("E", "3"),
-                AlphabetKey("R", "4"),
-                AlphabetKey("T", "5"),
-                AlphabetKey("Y", "6"),
-                AlphabetKey("U", "7"),
-                AlphabetKey("I", "8"),
-                AlphabetKey("O", "9"),
-                AlphabetKey("P", "0")
+                LetterKey("Q"),
+                LetterKey("W"),
+                LetterKey("E"),
+                LetterKey("R"),
+                LetterKey("T"),
+                LetterKey("Y"),
+                LetterKey("U"),
+                LetterKey("I"),
+                LetterKey("O"),
+                LetterKey("P")
             ),
             listOf(
-                AlphabetKey("A", "@"),
-                AlphabetKey("S", "*"),
-                AlphabetKey("D", "+"),
-                AlphabetKey("F", "-"),
-                AlphabetKey("G", "="),
-                AlphabetKey("H", "/"),
-                AlphabetKey("J", "#"),
-                AlphabetKey("K", "("),
-                AlphabetKey("L", ")"),
+                LetterKey("A"),
+                LetterKey("S"),
+                LetterKey("D"),
+                LetterKey("F"),
+                LetterKey("G"),
+                LetterKey("H"),
+                LetterKey("J"),
+                LetterKey("K"),
+                LetterKey("L"),
                 // Anthy converts "-" to "ー"; ATOK also puts it at the right
                 // end of this row.
                 SymbolKey("-", 0.1f, KeyDef.Appearance.Variant.Alternative)
             ),
             listOf(
                 CapsKey(),
-                AlphabetKey("Z", "'"),
-                AlphabetKey("X", ":"),
-                AlphabetKey("C", "\""),
-                AlphabetKey("V", "?"),
-                AlphabetKey("B", "!"),
-                AlphabetKey("N", "~"),
-                AlphabetKey("M", "\\"),
+                LetterKey("Z"),
+                LetterKey("X"),
+                LetterKey("C"),
+                LetterKey("V"),
+                LetterKey("B"),
+                LetterKey("N"),
+                LetterKey("M"),
                 BackspaceKey()
             ),
             listOf(
