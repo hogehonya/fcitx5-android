@@ -75,3 +75,25 @@ adb -s <serial> shell ime set    org.fcitx.fcitx5.android.debug/org.fcitx.fcitx5
 adb -s <serial> exec-out run-as org.fcitx.fcitx5.android.debug \
   cat shared_prefs/org.fcitx.fcitx5.android.debug_preferences.xml
 ```
+
+## Mozcプラグイン（Android・試行中）
+
+`honya/mozc-trial` ブランチ。OSS Mozc（`fcitx5-mozc`）をAndroid向けに組む試行。上流の `mozc` ブランチ/PR #941 は未マージで、prebuiltの`libmozc-static.a`も配布されていないため、mozc本体を自前でクロスビルドする。
+
+### ビルド手順（.20 / arm64-v8a で確認、2026-09-23）
+
+1. `git submodule update --init --recursive plugin/mozc/src/main/cpp/fcitx5-mozc`（`fcitx5-mozc` master → mozc / protobuf 34.1 / abseil を取得。約280MB）
+2. host protoc を用意: `protobuf` submodule から `cmake --build /tmp/protoc-host --target protoc` し、`~/.local/bin/protoc` へ配置（クロスビルドでは host 側 protoc が必須）
+3. `python` シム: `ln -sf "$(command -v python3)" ~/.local/bin/python`（mozc の生成スクリプトが `python` を呼ぶ）
+4. `patches/0001-android-util.patch` を `fcitx5-mozc` に適用（`base/android_util.cc` を Android ビルドへ追加）
+5. OSSデータ生成: `cd plugin/mozc/src/main/cpp/fcitx5-mozc/mozc/src && bazel build //data_manager/oss:mozc_dataset_for_oss@header` → `bazel-bin/data_manager/oss/mozc_data.inc`（48MB）を `data_manager/oss/` へコピー
+6. プラグイン: `./gradlew :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a`（`plugin/mozc/build.gradle.kts` に `buildFeatures { resValues = true }` が必須）
+
+### 成果物と配備
+
+- `plugin/mozc/build/outputs/apk/debug/org.fcitx.fcitx5.android.plugin.mozc-*-debug.apk`（arm64で21.8MB、`libmozc.so` 39MB＝OSS辞書・連接行列を内蔵）
+- 配備は `adb install -r`（Anthyプラグインとは別APK。同時導入可）
+
+### 辞書の更新
+
+追加語彙は mozc の `data/dictionary_manual/{words.tsv,places.tsv}`（`よみ / 表記 / 品詞` のTSV）へ足し、手順5でデータを再生成する。語彙そのものは `honya-dev-forks/mozc-dict` で管理する。
