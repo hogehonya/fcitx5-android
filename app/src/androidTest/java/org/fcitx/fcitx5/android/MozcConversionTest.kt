@@ -24,6 +24,8 @@ import org.junit.Test
 class MozcConversionTest {
     companion object {
         private lateinit var fcitx: Fcitx
+        private var previousEnabled: Array<String>? = null
+        private var previousIme: String? = null
 
         @BeforeClass
         @JvmStatic
@@ -33,16 +35,30 @@ class MozcConversionTest {
             fcitx.start()
             withTimeout(60_000) { while (!fcitx.isReady) delay(50) }
             assertTrue("Install the matching Mozc plugin", fcitx.availableIme().any { it.uniqueName == "mozc" })
-            fcitx.setEnabledIme(arrayOf("mozc"))
+            previousEnabled = fcitx.enabledIme().map { it.uniqueName }.toTypedArray()
             fcitx.activate(android.os.Process.myUid(), context.packageName)
             fcitx.focus(true)
+            previousIme = fcitx.currentIme().uniqueName
+            fcitx.setEnabledIme(arrayOf("mozc"))
             fcitx.activateIme("mozc")
             assertEquals("mozc", fcitx.currentIme().uniqueName)
         }
 
         @AfterClass
         @JvmStatic
-        fun stop() { fcitx.stop() }
+        fun stop() = runBlocking {
+            try {
+                if (fcitx.isReady) {
+                    fcitx.reset()
+                    previousEnabled?.let { fcitx.setEnabledIme(it) }
+                    previousIme?.let { fcitx.activateIme(it) }
+                    fcitx.focus(false)
+                    fcitx.deactivate(android.os.Process.myUid())
+                }
+            } finally {
+                fcitx.stop()
+            }
+        }
     }
 
     @Before
@@ -119,6 +135,28 @@ class MozcConversionTest {
         type("nihongo")
         assertEquals("にほんご", committed { key(FcitxKeyMapping.FcitxKey_Return) })
         assertTrue(fcitx.isEmpty())
+    }
+
+    @Test
+    fun japanesePunctuationUsesToutenAndKuten() = runBlocking {
+        type("nihongo,desu.")
+        val text = committed { key(FcitxKeyMapping.FcitxKey_Return) }
+        assertTrue(text.contains('、'))
+        assertTrue(text.endsWith('。'))
+        assertFalse(text.contains(','))
+        assertFalse(text.contains('.'))
+    }
+
+    @Test
+    fun alphanumericPunctuationKeepsCommaAndPeriod() = runBlocking {
+        key(FcitxKeyMapping.FcitxKey_Eisu_toggle)
+        try {
+            type("abc,def.")
+            assertEquals("abc,def.", committed { key(FcitxKeyMapping.FcitxKey_Return) })
+        } finally {
+            fcitx.reset()
+            key(FcitxKeyMapping.FcitxKey_Hiragana_Katakana)
+        }
     }
 
     @Test

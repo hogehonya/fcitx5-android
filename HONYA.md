@@ -117,6 +117,10 @@ Enter長押しの一括確定は、通常キーボード・候補展開・記号
 未確定文字がないとき、または他のIMEでは従来の長押しメニューを維持する。
 ATOK Androidの操作を参考にしているが、辞書や候補順位を含む完全互換ではない。
 
+句読点はMozcの入力モードで切り替わる。標準設定では、かな入力中の`,`／`.`は
+`、`／`。`になり、半角英数入力中は`,`／`.`のまま入力する。主面の`.`が句点、
+記号面（`?123` → `!?#`）の`,`が読点に対応する。主面の`@`キーは維持している。
+
 ### ビルドと回帰検証
 
 本体とMozcプラグインの両方を更新する。前述のSDK、host protoc、生成済みOSS辞書が必要。
@@ -131,9 +135,10 @@ ECM_DIR=$HOME/ecm/usr/share/ECM/cmake ./gradlew :app:assembleDebug :plugin:mozc:
 ```
 
 Android統合テストは`MozcConversionTest`（実エンジン・辞書で候補確定、文節保持、画面キーと
-物理キーの違い）と`MozcReturnGestureTest`（長押し後の二重確定・改行防止、既存メニュー保持）。
+物理キーの違い、日本語／英数の句読点）と`MozcReturnGestureTest`（長押し後の二重確定・改行防止、既存メニュー保持）。
 対象ABIで本体・Mozcプラグイン・テストAPKをビルドし、専用テスト端末へ導入して実行する。
-`MozcConversionTest`はテスト端末の有効IMEをMozcにするため、日常使用端末ではなく専用環境を使う。
+`MozcConversionTest`はアプリ内の有効IMEを一時的にMozcにし、終了時に復元する。
+辞書の学習は発生するため、専用のテスト環境を推奨する。Androidの既定IMEは変更しない。
 
 ```bash
 ./gradlew :app:assembleDebug :plugin:mozc:assembleDebug :app:assembleDebugAndroidTest -PbuildABI=x86_64
