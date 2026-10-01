@@ -28,3 +28,27 @@ set(MOZC_TARGET_BUILD ON)
 add_subdirectory(fcitx5-mozc)
 
 target_link_libraries(mozc log utf8_validity)
+
+# Build patched copies; configuring must not modify the pinned submodule.
+set(mozc_android_patch "${CMAKE_CURRENT_SOURCE_DIR}/../../../patches/0002-android-conversion-flow.patch")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${mozc_android_patch}")
+set(mozc_android_sources "${CMAKE_CURRENT_BINARY_DIR}/android-sources")
+foreach(source mozc_state.cc fcitx_key_translator.cc)
+    configure_file("fcitx5-mozc/src/unix/fcitx5/${source}"
+        "${mozc_android_sources}/src/unix/fcitx5/${source}" COPYONLY)
+endforeach()
+find_program(PATCH_EXECUTABLE patch REQUIRED)
+execute_process(COMMAND "${PATCH_EXECUTABLE}" --batch --fuzz=0 -p1 -i "${mozc_android_patch}"
+    WORKING_DIRECTORY "${mozc_android_sources}"
+    RESULT_VARIABLE mozc_patch_result OUTPUT_VARIABLE mozc_patch_output ERROR_VARIABLE mozc_patch_error)
+if(NOT mozc_patch_result EQUAL 0)
+    message(FATAL_ERROR "Android Mozc patch failed: ${mozc_patch_output}${mozc_patch_error}")
+endif()
+get_target_property(mozc_sources mozc SOURCES)
+list(FILTER mozc_sources EXCLUDE REGEX "(^|/)(mozc_state|fcitx_key_translator)\\.cc$")
+set_property(TARGET mozc PROPERTY SOURCES "${mozc_sources}")
+target_sources(mozc PRIVATE
+    "${mozc_android_sources}/src/unix/fcitx5/mozc_state.cc"
+    "${mozc_android_sources}/src/unix/fcitx5/fcitx_key_translator.cc")
+# Supersedes the trial build's manual 0001 patch.
+target_sources(mozc-static PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/fcitx5-mozc/mozc/src/base/android_util.cc")

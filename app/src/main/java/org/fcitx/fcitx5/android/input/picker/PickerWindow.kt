@@ -150,12 +150,14 @@ class PickerWindow(
             pickerPagesAdapter.refreshIfNeeded()
             it.onReturnDrawableUpdate(returnKeyDrawable.resourceId)
             it.keyActionListener = keyActionListener
+            it.returnLongPressListener = commonKeyActionListener::onReturnLongPress
         }
     }
 
     override fun onDetached() {
         popup.dismissAll()
         pickerLayout.embeddedKeyboard.keyActionListener = null
+        pickerLayout.embeddedKeyboard.returnLongPressListener = null
     }
 
     override val showTitle = false

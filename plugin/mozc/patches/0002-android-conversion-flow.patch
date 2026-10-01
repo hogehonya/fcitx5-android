@@ -1,0 +1,39 @@
+--- a/src/unix/fcitx5/mozc_state.cc
++++ b/src/unix/fcitx5/mozc_state.cc
+@@ -155,7 +155,7 @@
+   DCHECK(out_error);
+ 
+   mozc::commands::SessionCommand command;
+-  command.set_type(mozc::commands::SessionCommand::SELECT_CANDIDATE);
++  command.set_type(mozc::commands::SessionCommand::SUBMIT_CANDIDATE);
+   command.set_id(unique_id);
+   return TrySendRawCommand(command, out, out_error);
+ }
+--- a/src/unix/fcitx5/fcitx_key_translator.cc
++++ b/src/unix/fcitx5/fcitx_key_translator.cc
+@@ -354,6 +354,25 @@
+     return false;
+   }
+ 
++  // Android screen keys use Mozc's mobile segment operations. Keep physical
++  // keys and modified shortcuts on their existing desktop keymap.
++  if ((modifiers & KeyState::Virtual) &&
++      !modifiers.testAny(KeyStates{KeyState::Ctrl, KeyState::Alt, KeyState::Shift})) {
++    switch (out_event->special_key()) {
++      case commands::KeyEvent::ENTER:
++        out_event->set_special_key(commands::KeyEvent::VIRTUAL_ENTER);
++        break;
++      case commands::KeyEvent::LEFT:
++        out_event->set_special_key(commands::KeyEvent::VIRTUAL_LEFT);
++        break;
++      case commands::KeyEvent::RIGHT:
++        out_event->set_special_key(commands::KeyEvent::VIRTUAL_RIGHT);
++        break;
++      default:
++        break;
++    }
++  }
++
+   // Modifier keys
+   if (modifiers & KeyState::Shift && !IsPrintable(keyval, keycode, modifiers)) {
+     // Only set a SHIFT modifier when `keyval` is a printable key by following

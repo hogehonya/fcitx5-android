@@ -49,6 +49,8 @@ abstract class BaseKeyboard(
 
     var keyActionListener: KeyActionListener? = null
 
+    var returnLongPressListener: (() -> Boolean)? = null
+
     private val prefs = AppPrefs.getInstance()
 
     private val popupOnKeyPress by prefs.keyboard.popupOnKeyPress
@@ -251,9 +253,13 @@ abstract class BaseKeyboard(
                     is KeyDef.Popup.Menu -> {
                         setOnLongClickListener { view ->
                             view as KeyView
-                            onPopupAction(PopupAction.ShowMenuAction(view.id, it, view.bounds))
-                            // do not consume this LongClick gesture
-                            false
+                            if (def is ReturnKey && returnLongPressListener?.invoke() == true) {
+                                true
+                            } else {
+                                onPopupAction(PopupAction.ShowMenuAction(view.id, it, view.bounds))
+                                // Keep the gesture active for popup selection.
+                                false
+                            }
                         }
                         val oldOnGestureListener = onGestureListener ?: OnGestureListener.Empty
                         swipeEnabled = true

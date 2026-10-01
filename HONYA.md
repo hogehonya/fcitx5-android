@@ -85,7 +85,7 @@ adb -s <serial> exec-out run-as org.fcitx.fcitx5.android.debug \
 1. `git submodule update --init --recursive plugin/mozc/src/main/cpp/fcitx5-mozc`（`fcitx5-mozc` master → mozc / protobuf 34.1 / abseil を取得。約280MB）
 2. host protoc を用意: `protobuf` submodule から `cmake --build /tmp/protoc-host --target protoc` し、`~/.local/bin/protoc` へ配置（クロスビルドでは host 側 protoc が必須）
 3. `python` シム: `ln -sf "$(command -v python3)" ~/.local/bin/python`（mozc の生成スクリプトが `python` を呼ぶ）
-4. `patches/0001-android-util.patch` を `fcitx5-mozc` に適用（`base/android_util.cc` を Android ビルドへ追加）
+4. Android向け差分はCMakeが自動適用する（`android_util.cc`の追加と、ビルドディレクトリへコピーした2ファイルへのパッチ）。submoduleへの手動パッチ適用は不要。
 5. OSSデータ生成: `cd plugin/mozc/src/main/cpp/fcitx5-mozc/mozc/src && bazel build //data_manager/oss:mozc_dataset_for_oss@header` → `bazel-bin/data_manager/oss/mozc_data.inc`（48MB）を `data_manager/oss/` へコピー
 6. プラグイン: `./gradlew :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a`（`plugin/mozc/build.gradle.kts` に `buildFeatures { resValues = true }` が必須）
 
@@ -97,3 +97,46 @@ adb -s <serial> exec-out run-as org.fcitx.fcitx5.android.debug \
 ### 辞書の更新
 
 追加語彙は mozc の `data/dictionary_manual/{words.tsv,places.tsv}`（`よみ / 表記 / 品詞` のTSV）へ足し、手順5でデータを再生成する。語彙そのものは `honya-dev-forks/mozc-dict` で管理する。
+
+
+## Mozcの変換・確定操作
+
+画面キーボードでは以下の操作に対応する。物理キーボードのキー割り当ては従来どおり。
+
+| 操作 | 動作 |
+| --- | --- |
+| 入力中の予測候補をタップ | 候補を確定する。部分候補なら残りの読みを保持する |
+| 変換中の候補をタップ | 選んだ候補の文節まで確定し、残りを保持する |
+| Space | 変換開始／次の候補 |
+| 変換中の画面Enter | 先頭文節を確定し、残りを保持する |
+| 未変換の画面Enter | 読みを確定する |
+| Mozc入力中の画面Enter長押し | 入力全体を確定する。指を離しても改行を追加しない |
+| 変換中の画面←／→ | 文節の区切りを縮小／拡大する |
+
+Enter長押しの一括確定は、通常キーボード・候補展開・記号画面で利用できる。
+未確定文字がないとき、または他のIMEでは従来の長押しメニューを維持する。
+ATOK Androidの操作を参考にしているが、辞書や候補順位を含む完全互換ではない。
+
+### ビルドと回帰検証
+
+本体とMozcプラグインの両方を更新する。前述のSDK、host protoc、生成済みOSS辞書が必要。
+`~/.local/bin/protoc --version`が実行できることを確認する。一時フォルダ内のprotocへのリンクが
+切れていたら、固定されたprotobuf submoduleと同じ版を再ビルドしてから進める。
+
+```bash
+ECM_DIR=$HOME/ecm/usr/share/ECM/cmake ./gradlew :app:assembleDebug :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a
+# 既存のGradleタスク依存を切り分けるため、テストとlintは個別に実行する
+./gradlew :app:testDebugUnitTest -PbuildABI=arm64-v8a
+./gradlew :app:lintDebug -PbuildABI=arm64-v8a
+```
+
+Android統合テストは`MozcConversionTest`（実エンジン・辞書で候補確定、文節保持、画面キーと
+物理キーの違い）と`MozcReturnGestureTest`（長押し後の二重確定・改行防止、既存メニュー保持）。
+対象ABIで本体・Mozcプラグイン・テストAPKをビルドし、専用テスト端末へ導入して実行する。
+`MozcConversionTest`はテスト端末の有効IMEをMozcにするため、日常使用端末ではなく専用環境を使う。
+
+```bash
+./gradlew :app:assembleDebug :plugin:mozc:assembleDebug :app:assembleDebugAndroidTest -PbuildABI=x86_64
+# 対象を確認して3つのAPKを adb -s SERIAL install -r PATH で導入
+adb -s SERIAL shell am instrument -w -e class org.fcitx.fcitx5.android.MozcConversionTest,org.fcitx.fcitx5.android.MozcReturnGestureTest org.fcitx.fcitx5.android.debug.test/androidx.test.runner.AndroidJUnitRunner
+```

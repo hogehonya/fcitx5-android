@@ -101,6 +101,7 @@ class KeyboardWindow : InputWindow.SimpleInputWindow<KeyboardWindow>(), Essentia
             it.onDetach()
             keyboardView.removeView(it)
             it.keyActionListener = null
+            it.returnLongPressListener = null
             it.popupActionListener = null
         }
     }
@@ -109,6 +110,7 @@ class KeyboardWindow : InputWindow.SimpleInputWindow<KeyboardWindow>(), Essentia
         currentKeyboardName = target
         currentKeyboard?.let {
             it.keyActionListener = keyActionListener
+            it.returnLongPressListener = commonKeyActionListener::onReturnLongPress
             it.popupActionListener = popupActionListener
             keyboardView.apply { add(it, lParams(matchParent, matchParent)) }
             it.onAttach()
@@ -163,6 +165,7 @@ class KeyboardWindow : InputWindow.SimpleInputWindow<KeyboardWindow>(), Essentia
     override fun onAttached() {
         currentKeyboard?.let {
             it.keyActionListener = keyActionListener
+            it.returnLongPressListener = commonKeyActionListener::onReturnLongPress
             it.popupActionListener = popupActionListener
             it.onAttach()
         }
@@ -173,6 +176,7 @@ class KeyboardWindow : InputWindow.SimpleInputWindow<KeyboardWindow>(), Essentia
         currentKeyboard?.let {
             it.onDetach()
             it.keyActionListener = null
+            it.returnLongPressListener = null
             it.popupActionListener = null
         }
         popup.dismissAll()

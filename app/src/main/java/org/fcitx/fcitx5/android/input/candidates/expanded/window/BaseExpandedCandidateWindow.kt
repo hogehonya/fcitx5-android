@@ -158,6 +158,7 @@ abstract class BaseExpandedCandidateWindow<T : BaseExpandedCandidateWindow<T>> :
         candidateLayout.embeddedKeyboard.also {
             it.onReturnDrawableUpdate(returnKeyDrawable.resourceId)
             it.keyActionListener = keyActionListener
+            it.returnLongPressListener = commonKeyActionListener::onReturnLongPress
         }
         updateTabs(fcitx.runImmediately { inputPanelCached.tabs })
         offsetJob = service.lifecycleScope.launch {
@@ -200,6 +201,7 @@ abstract class BaseExpandedCandidateWindow<T : BaseExpandedCandidateWindow<T>> :
         candidatesSubmitJob?.cancel()
         offsetJob?.cancel()
         candidateLayout.embeddedKeyboard.keyActionListener = null
+        candidateLayout.embeddedKeyboard.returnLongPressListener = null
     }
 
     override fun onPreeditEmptyStateUpdate(empty: Boolean) {

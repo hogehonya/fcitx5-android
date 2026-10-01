@@ -9,6 +9,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.core.FcitxAPI
+import org.fcitx.fcitx5.android.core.FcitxKeyMapping
+import org.fcitx.fcitx5.android.core.KeyStates
+import org.fcitx.fcitx5.android.core.KeySym
 import org.fcitx.fcitx5.android.daemon.launchOnReady
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
 import org.fcitx.fcitx5.android.input.broadcast.PreeditEmptyStateComponent
@@ -77,6 +80,25 @@ class CommonKeyActionListener :
             service.finishComposing()
         }
         reset()
+    }
+
+    // Check again on the engine queue: a preceding candidate tap may have
+    // committed everything before this job runs. Never forward an extra newline.
+    fun onReturnLongPress(): Boolean {
+        val canCommit = fcitx.runImmediately {
+            inputMethodEntryCached.uniqueName == "mozc" &&
+                (clientPreeditCached.isNotEmpty() || inputPanelCached.preedit.isNotEmpty())
+        }
+        if (!canCommit) return false
+        service.postFcitxJob {
+            if (inputMethodEntryCached.uniqueName == "mozc" &&
+                (clientPreeditCached.isNotEmpty() || inputPanelCached.preedit.isNotEmpty())
+            ) {
+                // A non-virtual Enter commits the complete Mozc composition.
+                sendKey(KeySym(FcitxKeyMapping.FcitxKey_Return), KeyStates.Empty)
+            }
+        }
+        return true
     }
 
     private fun showInputMethodPicker() {
