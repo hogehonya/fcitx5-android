@@ -2,7 +2,7 @@
 
 Run `bash plugin/mozc/tools/prepare-host.sh` from a checkout with initialized
 submodules before building the plugin. Requires a C++20 compiler, CMake 3.22+,
-Ninja, Python 3 (also available as `python`), and Bazelisk (`bazel`).
+Ninja, Python 3 (also available as `python`), and Bazelisk (`bazelisk` or `bazel`).
 
 The script builds host protoc from the pinned protobuf/Abseil sources into
 `plugin/mozc/build/host-protoc/bin` and generates the OSS dictionary with the

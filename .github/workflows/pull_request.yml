@@ -75,10 +75,20 @@ jobs:
           ./gradlew :assembleReleasePlugins
 
       - name: Upload app
+        if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v7
         with:
           name: app-${{ matrix.os }}
           path: app/build/outputs/apk/release/
+
+      # upload-artifact v4+ rejects non-GitHub servers as unsupported GHES.
+      - name: Upload app (Gitea)
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-${{ matrix.os }}
+          path: app/build/outputs/apk/release/
+          if-no-files-found: error
 
       - name: Pack plugins
         shell: bash
@@ -93,7 +103,16 @@ jobs:
           done
 
       - name: Upload plugins
+        if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v7
         with:
           name: plugins-${{ matrix.os }}
           path: plugins-to-upload
+
+      - name: Upload plugins (Gitea)
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: plugins-${{ matrix.os }}
+          path: plugins-to-upload
+          if-no-files-found: error

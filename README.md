@@ -41,7 +41,7 @@ In case you want Fcitx5 on other platforms: [macOS](https://github.com/fcitx-con
   - Zhuyin/Bopomofo (via [Chewing Plugin](./plugin/chewing))
   - Jyutping (via [Jyutping Plugin](./plugin/jyutping/), powered by [libime-jyutping](https://github.com/fcitx/libime-jyutping))
 - Vietnamese (via [UniKey Plugin](./plugin/unikey), supports Telex, VNI and VIQR)
-- Japanese (via [Anthy Plugin](./plugin/anthy))
+- Japanese (via [Anthy Plugin](./plugin/anthy) or the Mozc plugin described in [HONYA.md](HONYA.md))
 - Korean (via [Hangul Plugin](./plugin/hangul))
 - Sinhala (via [Sayura Plugin](./plugin/sayura))
 - Thai (via [Thai Plugin](./plugin/thai))
