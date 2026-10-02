@@ -83,10 +83,10 @@ adb -s <serial> exec-out run-as org.fcitx.fcitx5.android.debug \
 ### ビルド手順（.20 / arm64-v8a で確認、2026-09-23）
 
 1. `git submodule update --init --recursive plugin/mozc/src/main/cpp/fcitx5-mozc`（`fcitx5-mozc` master → mozc / protobuf 34.1 / abseil を取得。約280MB）
-2. host protoc を用意: `protobuf` submodule から `cmake --build /tmp/protoc-host --target protoc` し、`~/.local/bin/protoc` へ配置（クロスビルドでは host 側 protoc が必須）
-3. `python` シム: `ln -sf "$(command -v python3)" ~/.local/bin/python`（mozc の生成スクリプトが `python` を呼ぶ）
+2. CMake 3.22以上、Ninja、C++20コンパイラ、Python 3（`python`でも起動可能）、Bazelisk（`bazel`）を用意する。
+3. `bash plugin/mozc/tools/prepare-host.sh` で固定submodule版のhost protocとOSS辞書を生成する。protocは`plugin/mozc/build/host-protoc/bin/`へ配置される。
 4. Android向け差分はCMakeが自動適用する（`android_util.cc`の追加と、ビルドディレクトリへコピーした2ファイルへのパッチ）。submoduleへの手動パッチ適用は不要。
-5. OSSデータ生成: `cd plugin/mozc/src/main/cpp/fcitx5-mozc/mozc/src && bazel build //data_manager/oss:mozc_dataset_for_oss@header` → `bazel-bin/data_manager/oss/mozc_data.inc`（48MB）を `data_manager/oss/` へコピー
+5. 辞書を変更した場合も手順3を再実行する。生成物はコミットしない。
 6. プラグイン: `./gradlew :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a`（`plugin/mozc/build.gradle.kts` に `buildFeatures { resValues = true }` が必須）
 
 ### 成果物と配備
@@ -96,7 +96,7 @@ adb -s <serial> exec-out run-as org.fcitx.fcitx5.android.debug \
 
 ### 辞書の更新
 
-追加語彙は mozc の `data/dictionary_manual/{words.tsv,places.tsv}`（`よみ / 表記 / 品詞` のTSV）へ足し、手順5でデータを再生成する。語彙そのものは `honya-dev-forks/mozc-dict` で管理する。
+追加語彙は mozc の `data/dictionary_manual/{words.tsv,places.tsv}`（`よみ / 表記 / 品詞` のTSV）へ足し、手順3でデータを再生成する。語彙そのものは `honya-dev-forks/mozc-dict` で管理する。
 
 
 ## Mozcの変換・確定操作
@@ -124,8 +124,11 @@ ATOK Androidの操作を参考にしているが、辞書や候補順位を含�
 ### ビルドと回帰検証
 
 本体とMozcプラグインの両方を更新する。前述のSDK、host protoc、生成済みOSS辞書が必要。
-`~/.local/bin/protoc --version`が実行できることを確認する。一時フォルダ内のprotocへのリンクが
-切れていたら、固定されたprotobuf submoduleと同じ版を再ビルドしてから進める。
+`plugin/mozc/build/host-protoc/bin/protoc --version`が実行できることを確認する。
+詳細は[host tools](plugin/mozc/tools/README.md)を参照。従来のPATH上のhost protocも利用できる。
+
+Gitea CIはUbuntu上で単体テストと本体・全プラグインの全対応ABIをビルドする。
+GitHubのホストOS別マトリクスは維持する。Nixの依存取得へGiteaのトークンは渡さない。
 
 ```bash
 ECM_DIR=$HOME/ecm/usr/share/ECM/cmake ./gradlew :app:assembleDebug :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a

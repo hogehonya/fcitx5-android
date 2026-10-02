@@ -56,6 +56,8 @@
                       extra-cmake-modules
                       gettext
                       python3
+                      bazelisk
+                      ninja
                       icu
                       androidStudio
                     ];

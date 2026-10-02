@@ -21,7 +21,9 @@ include_directories(mozc
 )
 
 # Cross-build: protoc must run on the host, not on the target ABI.
-set(PROTOC_EXECUTABLE "$ENV{HOME}/.local/bin/protoc" CACHE FILEPATH "host protoc" FORCE)
+find_program(PROTOC_EXECUTABLE protoc
+    HINTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../build/host-protoc/bin" "$ENV{HOME}/.local/bin"
+    NO_CMAKE_FIND_ROOT_PATH REQUIRED)
 set(protobuf_BUILD_PROTOC_BINARIES OFF)
 
 set(MOZC_TARGET_BUILD ON)

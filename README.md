@@ -1,7 +1,7 @@
 # fcitx5-android
 
 This fork includes an Android Mozc plugin and Japanese keyboard customizations.
-See [HONYA.md](HONYA.md) for conversion gestures, build requirements, and regression tests.
+See [HONYA.md](HONYA.md) for conversion gestures, reproducible Mozc host-tool preparation, CI, and regression tests.
 
 [Fcitx5](https://github.com/fcitx/fcitx5) input method framework and engines ported to Android.
 
