@@ -128,7 +128,7 @@ ATOK Androidの操作を参考にしているが、辞書や候補順位を含�
 詳細は[host tools](plugin/mozc/tools/README.md)を参照。従来のPATH上のhost protocも利用できる。
 
 Gitea CIはUbuntu上で単体テストと本体・全プラグインの全対応ABIをビルドする。
-GitHubのホストOS別マトリクスは維持する。Nixの依存取得へGiteaのトークンは渡さない。
+このフォークのCIホストはUbuntuに統一する。Nixの依存取得へGiteaのトークンは渡さない。
 
 ```bash
 ECM_DIR=$HOME/ecm/usr/share/ECM/cmake ./gradlew :app:assembleDebug :plugin:mozc:assembleDebug -PbuildABI=arm64-v8a

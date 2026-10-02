@@ -10,12 +10,7 @@ on:
 
 jobs:
   build_pull_request:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Gitea's runner fleet is Linux; all Android ABIs are still built.
-        os: ${{ fromJSON(github.server_url == 'https://github.com' && '["ubuntu-24.04", "macos-15-intel", "macos-26", "windows-2025"]' || '["ubuntu-24.04"]') }}
+    runs-on: ubuntu-24.04
     steps:
       - name: Fetch source code
         uses: actions/checkout@v7
@@ -37,22 +32,9 @@ jobs:
           sdkmanager --install "cmake;3.31.6"
 
       - name: Install system dependencies (Ubuntu)
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
         run: |
           sudo apt update
           sudo apt install -y extra-cmake-modules gettext cmake ninja-build g++ python-is-python3
-
-      - name: Install system dependencies (macOS)
-        if: ${{ startsWith(matrix.os, 'macos') }}
-        run: |
-          brew install extra-cmake-modules
-
-      - name: Install system dependencies (Windows)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        run: |
-          C:/msys64/usr/bin/pacman -Syu --noconfirm
-          C:/msys64/usr/bin/pacman -S --noconfirm mingw-w64-ucrt-x86_64-gettext mingw-w64-ucrt-x86_64-extra-cmake-modules
-          Add-Content $env:GITHUB_PATH "C:/msys64/ucrt64/bin"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -78,7 +60,7 @@ jobs:
         if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v7
         with:
-          name: app-${{ matrix.os }}
+          name: app-ubuntu-24.04
           path: app/build/outputs/apk/release/
 
       # upload-artifact v4+ rejects non-GitHub servers as unsupported GHES.
@@ -86,7 +68,7 @@ jobs:
         if: ${{ github.server_url != 'https://github.com' }}
         uses: actions/upload-artifact@v3
         with:
-          name: app-${{ matrix.os }}
+          name: app-ubuntu-24.04
           path: app/build/outputs/apk/release/
           if-no-files-found: error
 
@@ -106,13 +88,13 @@ jobs:
         if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v7
         with:
-          name: plugins-${{ matrix.os }}
+          name: plugins-ubuntu-24.04
           path: plugins-to-upload
 
       - name: Upload plugins (Gitea)
         if: ${{ github.server_url != 'https://github.com' }}
         uses: actions/upload-artifact@v3
         with:
-          name: plugins-${{ matrix.os }}
+          name: plugins-ubuntu-24.04
           path: plugins-to-upload
           if-no-files-found: error
